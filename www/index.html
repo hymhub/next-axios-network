@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Network</title>
+</head>
+<body>
+  <ul id="requestList"></ul>
+
+  <script>
+    function createWebSocket() {
+      const socket = new WebSocket('ws://localhost:2999');
+
+      socket.onopen = () => {
+        console.log('WebSocket connection opened');
+      };
+
+      socket.onmessage = (event) => {
+        // 在这里处理接收到的请求信息，可以将信息显示在监控网页上
+        const requestList = document.getElementById('requestList');
+        const listItem = document.createElement('li');
+        listItem.textContent = event.data;
+        requestList.appendChild(listItem);
+      };
+
+      socket.onclose = (event) => {
+        console.log('WebSocket connection closed', event);
+        setTimeout(() => {
+          createWebSocket();
+        }, 1000);
+      };
+    }
+
+    // 初始创建WebSocket连接
+    createWebSocket();
+  </script>
+</body>
+</html>
