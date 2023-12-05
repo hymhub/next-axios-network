@@ -21,7 +21,7 @@ function App() {
     }
   }, [])
   return (
-    <div className="w-full h-full [border:1px_solid_#474747] grid grid-cols-[1fr_1fr_1fr_1fr] [&>section:not(:last-of-type)]:[border-right:1px_solid_#474747] [&>section>ul>p]:[border-bottom:1px_solid_#474747] [&>section>ul>li:nth-of-type(2n)]:bg-[#202020]">
+    <div className="w-full h-full [border:1px_solid_#474747] grid grid-cols-[1fr_1fr_1fr_1fr] [&>section:not(:last-of-type)]:[border-right:1px_solid_#474747] [&>section>ul>p]:[border-bottom:1px_solid_#474747] [&>section>ul>li:nth-of-type(2n)]:bg-[#202020] [&>section>ul>p]:py-2 [&>section>ul>li]:py-1 [&>section>ul>p]:px-2 [&>section>ul>li]:px-2">
       <section className="">
         <ul className="">
           <p className="">
