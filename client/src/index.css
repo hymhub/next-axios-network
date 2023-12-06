@@ -1,3 +1,43 @@
+/* 设置滚动条的样式 */
+::-webkit-scrollbar {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+}
+
+/* 设置滚动条轨道的样式 */
+::-webkit-scrollbar-track {
+  background-color: #2C2C2C; /* 设置滚动条轨道颜色 */
+}
+
+/* 设置滚动条滑块的样式 */
+::-webkit-scrollbar-thumb {
+  background-color: #6B6B6B; /* 设置滚动条滑块颜色 */
+  border-radius: 4px; /* 设置滑块边角的圆角 */
+}
+
+/* 设置鼠标悬停在滚动条上的滑块样式 */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #949393; /* 设置鼠标悬停时的颜色 */
+}
+
+::-webkit-scrollbar-track {
+  background-color: #2C2C2C;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-thumb:hover {
+  background-color: transparent;
+}
+
+.scrollbar-transparent::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-bottom:1px solid #474747;
+}
+
 html {
   --inner-height: 100vh;
 }
@@ -16,6 +56,10 @@ body {
   padding: 0;
   line-height: 1em;
   box-sizing: border-box;
+}
+th {
+  text-align: left;
+  font-weight: normal;
 }
 li {
   list-style: none;
