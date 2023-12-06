@@ -1,17 +1,11 @@
-import ReactJson from '@microlink/react-json-view'
+import ReactJson from "@microlink/react-json-view";
 import { Fragment, useEffect, useState } from "react";
-import { getRequestSize, getResponseSize } from "./utils";
-import { reqdemo, resdemo } from "./mock";
+import { getResponseSize } from "./utils";
 import clsx from "clsx";
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import json from 'react-syntax-highlighter/dist/esm/languages/hljs/json';
-SyntaxHighlighter.registerLanguage('json', json);
-
-const item = {
-  requestMiddleWare: reqdemo,
-  responseMiddleWare: resdemo,
-};
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
+import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
+SyntaxHighlighter.registerLanguage("json", json);
 
 const boxHeightChange = () => {
   document.documentElement.style.setProperty(
@@ -20,10 +14,44 @@ const boxHeightChange = () => {
   );
 };
 
+function createWebSocket(cb: (data: any) => void) {
+  const socket = new WebSocket("ws://localhost:2999");
+
+  socket.onopen = () => {
+    console.log("WebSocket connection opened");
+  };
+
+  socket.onmessage = (event) => {
+    cb(JSON.parse(event.data));
+  };
+
+  socket.onclose = (event) => {
+    console.log("WebSocket connection closed", event);
+    setTimeout(() => {
+      createWebSocket(cb);
+    }, 1000);
+  };
+}
+
 function App() {
+  const [list, setList] = useState<any[]>([]);
   const [tabActiveIndex, setTabActiveIndex] = useState(0);
-  const [activeItem, setActiveItem] = useState<unknown>(null);
+  const [activeItem, setActiveItem] = useState<any>(null);
   useEffect(() => {
+    createWebSocket((data) => {
+      console.log("====================================");
+      console.log(data);
+      console.log("====================================");
+      setList((v) => {
+        const tmp = v.find((t) => t.id === data.id);
+        if (tmp) {
+          tmp.content = data.content;
+        } else {
+          v = [data, ...v];
+        }
+        return v;
+      });
+    });
     window.addEventListener("resize", boxHeightChange);
     boxHeightChange();
     return () => {
@@ -56,20 +84,28 @@ function App() {
           </tr>
         </thead>
         <tbody className="w-full h-[calc(100%-34px)] overflow-y-scroll flex flex-col">
-          {[
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3,
-            4, 5, 6, 7, 8, 9, 0,
-          ].map((v, index) => (
+          {list.map((item, index) => (
             <tr
               onClick={() => setActiveItem(item)}
               key={index}
               className="[&>td:not(:last-of-type)]:[border-right:1px_solid_#474747] item [&>td]:py-[6px] [&>td]:px-2 hover:!bg-[#424242] text-[14px] [&>td]:overflow-hidden whitespace-nowrap"
             >
-              <td>{item.requestMiddleWare.data.url}</td>
+              <td>
+                {item.content.request.fullURL.slice(
+                  item.content.request.fullURL
+                    .slice(
+                      0,
+                      item.content.request.fullURL.indexOf("?") === -1
+                        ? item.content.request.fullURL.length
+                        : item.content.request.fullURL.indexOf("?")
+                    )
+                    .lastIndexOf("/") + 1
+                )}
+              </td>
               {!activeItem && (
                 <Fragment>
-                  <td>{item.responseMiddleWare.data.status}</td>
-                  <td>{getResponseSize(item.responseMiddleWare.data)}</td>
+                  <td>{item.content.response?.status ?? "Pending"}</td>
+                  <td>{getResponseSize(item.content.response) ?? "Pending"}</td>
                   <td>{"Pending"}</td>
                 </Fragment>
               )}
@@ -117,27 +153,46 @@ function App() {
               [
                 <div className="h-full">
                   <section>
-                    <p className="p-2 [border-top:1px_solid_#474747] [border-bottom:1px_solid_#474747] text-[#BDC6CF]">General</p>
+                    <p className="p-2 [border-top:1px_solid_#474747] [border-bottom:1px_solid_#474747] text-[#BDC6CF]">
+                      General
+                    </p>
                     <ul className="[&>li>span]:text-[#E7E9EC] [&>li>span]:whitespace-nowrap [&>li>p]:text-[#B8C1CA] [&>li>p]:text-[14px] [&>li]:grid [&>li]:grid-cols-[minmax(150px,30%)_1fr] [&>li]:items-center [&>li]:gap-x-2 p-2">
                       <li>
                         <span>Request URL:</span>
-                        <p>{'http://www.www.www'}</p>
+                        <p>{activeItem.content.request.fullURL}</p>
                       </li>
                       <li>
                         <span>Request Method:</span>
-                        <p>{'GET'}</p>
+                        <p>{activeItem.content.request.method}</p>
                       </li>
                       <li>
                         <span>Status Code:</span>
-                        <p>{}</p>
+                        <p>
+                          {activeItem.content.response?.status ?? "Pending"}
+                        </p>
                       </li>
                     </ul>
                   </section>
                 </div>,
-                <ReactJson style={{height: '100%'}} theme="monokai" iconStyle="triangle" enableClipboard={false} displayDataTypes={false} src={item.responseMiddleWare.data.data} />,
-                <SyntaxHighlighter className="h-full" showLineNumbers style={a11yDark}>
-                  {JSON.stringify(item.responseMiddleWare.data.data, null, '    ')}
-                </SyntaxHighlighter>
+                <ReactJson
+                  style={{ height: "100%" }}
+                  theme="monokai"
+                  iconStyle="triangle"
+                  enableClipboard={false}
+                  displayDataTypes={false}
+                  src={activeItem.content.response?.data ?? ""}
+                />,
+                <SyntaxHighlighter
+                  className="h-full"
+                  showLineNumbers
+                  style={a11yDark}
+                >
+                  {JSON.stringify(
+                    activeItem.content.response?.data ?? "",
+                    null,
+                    "    "
+                  )}
+                </SyntaxHighlighter>,
               ][tabActiveIndex]
             }
           </div>
