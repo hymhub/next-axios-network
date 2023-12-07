@@ -37,7 +37,9 @@
   background-color: transparent;
   border-bottom:1px solid #474747;
 }
-
+.copy-to-clipboard-container {
+  height: 12px !important;
+}
 html {
   --inner-height: 100vh;
 }

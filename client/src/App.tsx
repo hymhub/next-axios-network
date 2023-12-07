@@ -242,18 +242,29 @@ function App() {
               <div className="w-4 h-[2px] bg-[#C7C7C7] rounded-full -rotate-45 absolute"></div>
             </button>
             <ul className="flex">
-              {["Headers", "Preview", "Response"].map((tab, index) => (
-                <li
-                  key={tab}
-                  onClick={() => setTabActiveIndex(index)}
-                  className={clsx("select-none p-2 hover:bg-[#545454]", {
-                    "!text-[#7CACF8] [border-bottom:2px_solid_#7CACF8]":
-                      tabActiveIndex === index,
-                  })}
-                >
-                  {tab}
-                </li>
-              ))}
+              {["Headers", "Payload", "Preview", "Response"]
+                .filter((v) => {
+                  if (
+                    v === "Payload" &&
+                    !activeItem.content?.request?.params &&
+                    !activeItem.content?.request?.data
+                  ) {
+                    return false;
+                  }
+                  return true;
+                })
+                .map((tab, index) => (
+                  <li
+                    key={tab}
+                    onClick={() => setTabActiveIndex(index)}
+                    className={clsx("select-none p-2 hover:bg-[#545454]", {
+                      "!text-[#7CACF8] [border-bottom:2px_solid_#7CACF8]":
+                        tabActiveIndex === index,
+                    })}
+                  >
+                    {tab}
+                  </li>
+                ))}
             </ul>
           </div>
           <div
@@ -359,21 +370,69 @@ function App() {
                     )}
                   </section>
                 </div>,
+                !activeItem.content?.request?.params &&
+                !activeItem.content?.request?.data ? null : (
+                  <div>
+                    {activeItem.content?.request?.params && (
+                      <section className="pb-2">
+                        <p className="p-2 [border-top:1px_solid_#474747] [border-bottom:1px_solid_#474747] text-[#BDC6CF]">
+                          Query String parameters
+                        </p>
+                        <ul className="[&>li>span]:text-[#8F8F8F] [&>li>span]:whitespace-nowrap [&>li>p]:text-[#E3E3E3] [&>li>p]:text-[14px] [&>li]:flex [&>li]:items-center [&>li]:gap-x-2 py-2 px-4 grid gap-y-2">
+                          {Object.entries(
+                            activeItem.content.request.params
+                          ).map(([key, val]) => (
+                            <li key={key}>
+                              <span className="font-medium">{key}:</span>
+                              <p>{String(val)}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </section>
+                    )}
+                    {activeItem.content?.request?.data && (
+                      <section className="pb-2">
+                        <p className="p-2 [border-top:1px_solid_#474747] [border-bottom:1px_solid_#474747] text-[#BDC6CF]">
+                          Request Payload
+                        </p>
+                        <ul className="[&>li>span]:text-[#8F8F8F] [&>li>span]:whitespace-nowrap [&>li>p]:text-[#E3E3E3] [&>li>p]:text-[14px] [&>li]:flex [&>li]:items-center [&>li]:gap-x-2 py-2 px-4 grid gap-y-2">
+                          {typeof activeItem.content.request.data ===
+                          "object" ? (
+                            <ReactJson
+                              name={false}
+                              style={{ height: "100%", background: "#282828" }}
+                              theme="monokai"
+                              iconStyle="triangle"
+                              enableClipboard={true}
+                              displayDataTypes={false}
+                              displayObjectSize={false}
+                              collapseStringsAfterLength={50}
+                              src={activeItem.content.request.data as object}
+                            />
+                          ) : (
+                            String(activeItem.content.request.data)
+                          )}
+                        </ul>
+                      </section>
+                    )}
+                  </div>
+                ),
                 typeof activeItem.content.response?.data === "object" ? (
                   <ReactJson
-                    style={{ height: "100%" }}
+                    name={false}
+                    style={{ height: "100%", background: "#282828" }}
                     theme="monokai"
                     iconStyle="triangle"
                     enableClipboard={true}
                     displayDataTypes={false}
                     collapseStringsAfterLength={50}
-                    src={activeItem.content.response?.data ?? ""}
+                    src={activeItem.content.response?.data}
                   />
                 ) : (
                   <div className="p-2">{activeItem.content.response?.data}</div>
                 ),
                 <SyntaxHighlighter
-                  className="h-full"
+                  className="h-full !bg-[#282828]"
                   showLineNumbers={!!activeItem.content.response?.data}
                   style={a11yDark}
                 >

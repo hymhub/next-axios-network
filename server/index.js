@@ -58,6 +58,11 @@ app.use(async (ctx) => {
       if (caches.length > 50) {
         caches.pop();
       }
+      const fullURL =
+        (data.baseURL ?? "") +
+        (!data.baseURL || data.baseURL.endsWith("/") ? "" : "/") +
+        (data.url[0] === "/" ? data.url.slice(1) : data.url) +
+        (data.params ? `?${qs.stringify(data.params)}` : "");
       const item = {
         id: data.id,
         content: {
@@ -65,12 +70,13 @@ app.use(async (ctx) => {
             ...data,
             url: data.url,
             baseURL: data.baseURL,
-            fullURL:
-              (data.baseURL ?? "") +
-              (!data.baseURL || data.baseURL.endsWith("/") ? "" : "/") +
-              (data.url[0] === "/" ? data.url.slice(1) : data.url) +
-              (data.params ? `?${qs.stringify(data.params)}` : ""),
+            fullURL,
             method: data.method.toUpperCase(),
+            ...(fullURL.includes("?")
+              ? {
+                  params: qs.parse(fullURL.slice(fullURL.indexOf("?") + 1)),
+                }
+              : {}),
             headers:
               data.headers &&
               Object.values(data.headers).find(
@@ -141,7 +147,7 @@ app.use(async (ctx) => {
       }
       notify(ctx, {
         ...item,
-        type: "response-error"
+        type: "response-error",
       });
     }
   }
