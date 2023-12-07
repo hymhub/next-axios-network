@@ -150,5 +150,5 @@ app.use(async (ctx) => {
 const PORT = process.env.PORT || 2999;
 
 server.listen(PORT, () => {
-  console.log(`next-axios-network listening on port ${PORT}`);
+  console.log(`next-axios-network listening on http://localhost:${PORT}`);
 });

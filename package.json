@@ -9,6 +9,13 @@
   "bin": {
     "nan-start": "bin/index.js"
   },
+  "files": [
+    "plugin",
+    "server",
+    "global.d.ts",
+    "index.d.ts",
+    "index.js"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
