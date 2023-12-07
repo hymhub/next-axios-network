@@ -1,118 +1,133 @@
-const Koa = require("koa");
-const http = require("http");
-const WebSocket = require("ws");
-const bodyParser = require("koa-bodyparser");
-const serve = require("koa-static");
-const path = require("path");
-const parseHeaders = require("parse-headers");
-var qs = require("qs");
-
-const app = new Koa();
-const server = http.createServer(app.callback());
-const wss = new WebSocket.Server({ server });
-
-const caches = [];
-
-app.use(bodyParser());
-
-// 配置静态资源目录
-const staticPath = path.join(__dirname, "www");
-app.use(serve(staticPath));
-
-wss.on("connection", (socket) => {
-  console.log("next-axios-network client connected");
-});
-
-const notify = (ctx, data) => {
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(data));
-    }
-  });
-  ctx.body = {
-    status: "success",
-    message: "next-axios-network Request received",
-  };
+const circularReplacer = () => {
+    const seen = new WeakSet();
+    return (key, value) => {
+        if (typeof value === "object" && value !== null) {
+            if (seen.has(value)) {
+                return "[Circular]";
+            }
+            seen.add(value);
+        }
+        return value;
+    };
 };
-
-// 处理HTTP请求
-app.use(async (ctx) => {
-  if (ctx.method === "GET" && ctx.path === "/xxx") {
-    console.log("in");
-    ctx.body = "ok";
-  }
-  if (ctx.method === "GET" && ctx.path === "/caches") {
-    ctx.body = caches;
-  }
-  if (ctx.method === "POST") {
-    const data = ctx.request.body;
-    if (ctx.path === "/request-middle-ware") {
-      if (caches.length > 50) {
-        caches.shift();
-      }
-      const item = {
-        id: data.id,
-        content: {
-          request: {
-            ...data,
-            url: data.url,
-            baseURL: data.baseURL,
-            fullURL:
-              data.baseURL +
-              (data.baseURL.endsWith("/") ? "" : "/") +
-              (data.url[0] === "/" ? data.url.slice(1) : data.url) +
-              (data.params ? `?${qs.stringify(data.params)}` : ""),
-            method: data.method.toUpperCase(),
-          },
-        },
-      };
-      caches.push(item);
-      notify(ctx, {
-        ...item,
-        type: "request-middle-ware",
-      });
-    } else if (ctx.path === "/request-error") {
-      notify(ctx, {
-        type: "request-error",
-        data: data,
-      });
-    } else if (ctx.path === "/response-middle-ware") {
-      const item = caches.find((v) => v.id === data.config.id);
-      if (item) {
-        item.content = {
-          request: {
-            ...item.content.request,
-            headers: data.requestHeader
-              ? parseHeaders(
-                  data.requestHeader.slice(data.requestHeader.indexOf("\n"))
-                )
-              : null,
-          },
-          response: {
-            status: data.status,
-            statusText: data.statusText,
-            headers: data.headers,
-            config: data.config,
-            data: data.data,
-            timeConsuming: data.timeConsuming,
-          },
-        };
-      }
-      notify(ctx, {
-        ...item,
-        type: "response-middle-ware",
-      });
-    } else if (ctx.path === "/response-error") {
-      notify(ctx, {
-        type: "response-error",
-        data: data,
-      });
+const get_header = (obj, visited = new WeakSet()) => {
+    var _a, _b;
+    const res1 = obj === null || obj === void 0 ? void 0 : obj._header;
+    const res2 = (_a = obj === null || obj === void 0 ? void 0 : obj._currentRequest) === null || _a === void 0 ? void 0 : _a._header;
+    const res3 = (_b = obj === null || obj === void 0 ? void 0 : obj._currentRequest) === null || _b === void 0 ? void 0 : _b._pendingData;
+    if (res1 || res2 || res3) {
+        return res1 || res2 || res3;
     }
-  }
-});
-
-const PORT = process.env.PORT || 2999;
-
-server.listen(PORT, () => {
-  console.log(`next-axios-network listening on port ${PORT}`);
-});
+    if (visited.has(obj)) {
+        return null;
+    }
+    visited.add(obj);
+    for (const key in obj) {
+        if (key === "_header") {
+            return obj[key];
+        }
+        if (typeof obj[key] === "object" && obj[key] !== null) {
+            const res = get_header(obj[key], visited);
+            if (res) {
+                return res;
+            }
+        }
+    }
+};
+function serializable(data) {
+    try {
+        const res = JSON.stringify(data, circularReplacer());
+        return res;
+    }
+    catch (error) {
+        return false;
+    }
+}
+const httpLogRequest = (data, type) => {
+    const jsonData = serializable(data);
+    typeof window === "undefined" &&
+        jsonData &&
+        fetch(`http://127.0.0.1:2999/${type}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: jsonData,
+        })
+            .then((response) => {
+            if (!response.ok) {
+                throw new Error();
+            }
+            return response.json();
+        })
+            .then((data) => { })
+            .catch((error) => {
+            console.error(`next-axios-network ${type} send error:`, error);
+        });
+};
+export const middlewares = {
+    requestMiddleWare(config) {
+        if (process.env.NODE_ENV !== "development") {
+            return config;
+        }
+        config.id = Math.random();
+        config.sendTime = Date.now();
+        httpLogRequest(config, "request-middle-ware");
+        return config;
+    },
+    requestError(error) {
+        if (process.env.NODE_ENV !== "development") {
+            return error;
+        }
+        httpLogRequest(error, "request-error");
+        return Promise.reject(error);
+    },
+    responseMiddleWare(response) {
+        if (process.env.NODE_ENV !== "development") {
+            return response;
+        }
+        httpLogRequest({
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+            config: response.config,
+            data: response.data,
+            requestHeader: get_header(response.request) || null,
+            timeConsuming: Date.now() - response.config.sendTime,
+        }, "response-middle-ware");
+        return response;
+    },
+    responseError(error) {
+        var _a, _b, _c, _d, _e, _f;
+        if (process.env.NODE_ENV !== "development") {
+            return error;
+        }
+        const sendTime = ((_a = error.config) === null || _a === void 0 ? void 0 : _a.sendTime) || ((_c = (_b = error.response) === null || _b === void 0 ? void 0 : _b.config) === null || _c === void 0 ? void 0 : _c.sendTime);
+        httpLogRequest({
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+            config: error.config || ((_d = error.response) === null || _d === void 0 ? void 0 : _d.config),
+            code: error.code,
+            status: error.response.status,
+            statusText: error.response.statusText,
+            requestHeader: ((error === null || error === void 0 ? void 0 : error.request) && get_header(error.request)) || null,
+            headers: (_e = error.response) === null || _e === void 0 ? void 0 : _e.headers,
+            data: (_f = error.response) === null || _f === void 0 ? void 0 : _f.data,
+            timeConsuming: sendTime && Date.now() - sendTime,
+        }, "response-error");
+        return Promise.reject(error);
+    },
+};
+const nextAxiosNetwork = (axios) => {
+    if (process.env.NODE_ENV !== "development") {
+        return;
+    }
+    globalThis.nextAxiosNetworkReqInterceptors &&
+        axios.interceptors.request.eject(globalThis.nextAxiosNetworkReqInterceptors);
+    globalThis.nextAxiosNetworkResInterceptors &&
+        axios.interceptors.request.eject(globalThis.nextAxiosNetworkResInterceptors);
+    globalThis.nextAxiosNetworkReqInterceptors = axios.interceptors.request.use(middlewares.requestMiddleWare, middlewares.requestError);
+    globalThis.nextAxiosNetworkResInterceptors = axios.interceptors.response.use(middlewares.responseMiddleWare, middlewares.responseError);
+};
+export default nextAxiosNetwork;
