@@ -1,10 +1,10 @@
 {
   "name": "next-axios-network",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "cd client && npm run build && cd ../ && node build.js && tsc"
+    "build": "cd client && npm run build && cd ../ && node build.js && tsc && tsup index.ts -d ."
   },
   "bin": {
     "nan-start": "bin/index.js"
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.3",
+    "tsup": "^8.0.1",
     "typescript": "^5.3.3"
   }
 }
