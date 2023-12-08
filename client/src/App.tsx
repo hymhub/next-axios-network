@@ -242,18 +242,12 @@ function App() {
               <div className="w-4 h-[2px] bg-[#C7C7C7] rounded-full -rotate-45 absolute"></div>
             </button>
             <ul className="flex">
-              {["Headers", "Payload", "Preview", "Response"]
-                .filter((v) => {
-                  if (
-                    v === "Payload" &&
-                    !activeItem.content?.request?.params &&
-                    !activeItem.content?.request?.data
-                  ) {
-                    return false;
-                  }
-                  return true;
-                })
-                .map((tab, index) => (
+              {["Headers", "Payload", "Preview", "Response"].map((tab, index) =>
+                tab === "Payload" &&
+                !activeItem.content?.request?.params &&
+                !activeItem.content?.request?.data ? (
+                  <Fragment key={tab}></Fragment>
+                ) : (
                   <li
                     key={tab}
                     onClick={() => setTabActiveIndex(index)}
@@ -264,7 +258,8 @@ function App() {
                   >
                     {tab}
                   </li>
-                ))}
+                )
+              )}
             </ul>
           </div>
           <div

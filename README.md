@@ -7,7 +7,7 @@
 
 ## 什么是 next-axios-network
 
-在使用 next.js 开发时，是否遇到过服务端请求无法详细 debug 的烦恼，例如：
+在使用 next.js 开发时，有时候会遇到服务端请求无法详细 debug 的烦恼，例如：
 
 ```js
 // `pages` directory
@@ -59,7 +59,7 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-2. 在你封装 axios 的地方或者项目首次执行的文件加入 axios 拦截器配置：
+2. 在封装 axios 的地方或者项目首次执行的文件加入 axios 拦截器配置：
 
 ```javascript
 import axios from "axios";
