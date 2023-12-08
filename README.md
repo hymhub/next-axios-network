@@ -73,7 +73,9 @@ nextAxiosNetwork(axios);
 import axios from "axios";
 import nextAxiosNetwork, { middlewares } from "next-axios-network";
 nextAxiosNetwork(axios);
-const yourAxiosInstance = axios.create({ /** ... */ });
+const yourAxiosInstance = axios.create({
+  /** ... */
+});
 yourAxiosInstance.instance.interceptors.request.use(
   middlewares.requestMiddleWare,
   middlewares.requestError
@@ -85,7 +87,56 @@ yourAxiosInstance.instance.interceptors.response.use(
 ```
 
 完成上述配置，启动项目后访问：
+
 ```bash
 http://localhost:2999
 ```
+
 即可看到监控面板
+
+## API
+
+在上述 NextAxiosNetworkPlugin 中可配置自定义参数，例如：
+
+```javascript
+const NextAxiosNetworkPlugin = require("next-axios-network/plugin");
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  webpack: (config) => {
+    config.plugins.push(
+      NextAxiosNetworkPlugin({
+        maxCaches: 100, // 最大缓存请求日志数量，默认 50
+      })
+    );
+    return config;
+  },
+  // ...
+};
+
+module.exports = nextConfig;
+```
+
+## 多项目共享面板
+
+如果有多个项目想共享面板，可以不配置打包插件，只配置拦截器并使用 npm 启动面板，例如：
+
+1. 在每个项目封装 axios 的地方或者项目首次执行的文件加入 axios 拦截器配置：
+
+```javascript
+import axios from "axios";
+import nextAxiosNetwork from "next-axios-network";
+nextAxiosNetwork(axios);
+```
+
+2. 在任意一个项目的 `package.json` 加入启动命令
+
+```json
+"scripts": {
+  "network-start": "nan-start",
+},
+```
+
+3. 在终端执行 `npm run network-start` 即可，多个项目同时启动，面板启动命令只需要在任意一个项目配置启动即可
+
+自定义参数可以通过启动命令设置环境变量，面板服务会读取 `process.env.MAX_CACHES`

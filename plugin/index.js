@@ -3,7 +3,7 @@ function NextAxiosNetworkPlugin(options) {
   return {
     apply: () => {
       if (!hasRunOnce && process.env.NODE_ENV === 'development') {
-        require('../server')
+        require('../server')(options)
       }
       hasRunOnce = true;
     },

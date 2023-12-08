@@ -7,7 +7,10 @@ import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 SyntaxHighlighter.registerLanguage("json", json);
 
-function createWebSocket(cb: (data: any) => void, init: (data: any) => void) {
+function createWebSocket(
+  cb: (data: any) => void,
+  init: (data: any, config: any) => void
+) {
   const socket = new WebSocket("ws://localhost:2999");
 
   socket.onopen = () => {
@@ -21,7 +24,7 @@ function createWebSocket(cb: (data: any) => void, init: (data: any) => void) {
       console.log(data);
       console.log("====================================");
     } else {
-      data.type === "init" ? init(data.caches) : cb(data);
+      data.type === "init" ? init(data.caches, data.config) : cb(data);
     }
   };
 
@@ -34,6 +37,7 @@ function createWebSocket(cb: (data: any) => void, init: (data: any) => void) {
 }
 
 function App() {
+  const [config, setConfig] = useState<any>({});
   const [list, setList] = useState<any[]>([]);
   const [tabActiveIndex, setTabActiveIndex] = useState(0);
   const [domWidth, setDomWidth] = useState(window.innerWidth);
@@ -99,10 +103,11 @@ function App() {
           } else {
             v = [data, ...v];
           }
-          return v.slice(0, 100);
+          return v.slice(0, config?.maxCaches || 100);
         });
       },
-      (data) => {
+      (data, config) => {
+        setConfig(config);
         setList(data);
       }
     );

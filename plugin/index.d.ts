@@ -1,2 +1,4 @@
-declare const NextAxiosNetworkPlugin: (options: any) => any;
+declare const NextAxiosNetworkPlugin: (options: {
+  maxCaches: number;
+}) => any;
 export default NextAxiosNetworkPlugin;
