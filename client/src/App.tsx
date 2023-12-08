@@ -50,6 +50,15 @@ function App() {
     );
   }, []);
   useEffect(() => {
+    if (activeItem && table.current) {
+      setTableWidth(table.current.offsetWidth);
+      if (
+        !activeItem.content?.request?.params &&
+        !activeItem.content?.request?.data
+      ) {
+        setTabActiveIndex(0);
+      }
+    }
     const m_resizer = resizer.current;
     let isResizing = false;
     const handleMouseMove = (e: any) => {
