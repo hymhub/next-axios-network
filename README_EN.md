@@ -2,14 +2,14 @@
 
 [中文](./README.md) ｜ [English](./README_EN.md)
 
-一款在开发时监控 next.js + axios 项目服务端请求的 Network 面板
+A Network panel to monitor server-side requests for next.js + axios projects during development.
 
 !['demo.png'](./demo.png)
 !['demo.png'](./demo1.png)
 
-## 什么是 next-axios-network
+## What is next-axios-network
 
-在使用 next.js 开发时，有时候会遇到服务端请求无法详细 debug 的烦恼，例如：
+When developing with next.js, you sometimes run into the annoyance of not being able to debug a server-side request in detail, for example:
 
 ```js
 // `pages` directory
@@ -34,17 +34,17 @@ export default async function Dashboard() {
 }
 ```
 
-这样的请求是在 node 环境进行的，无法通过浏览器 Network 面板进行监控，有了 next-axios-network 即可解决这个痛点
+Such requests are made in a node environment and cannot be monitored through the browser's Network panel, which is a pain point that can be solved with the next-axios-network
 
-## 安装
+## Install
 
 ```bash
 npm i next-axios-network -D
 ```
 
-## 使用
+## Usage
 
-1. 在 `next.config.js` 加入配置：
+1. Add configuration to `next.config.js`:
 
 ```javascript
 const NextAxiosNetworkPlugin = require("next-axios-network/plugin");
@@ -61,7 +61,7 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-2. 在封装 axios 的地方或者项目首次执行的文件加入 axios 拦截器配置：
+2. Add the axios interceptor configuration where axios is wrapped or in the file where the project is first executed:
 
 ```javascript
 import axios from "axios";
@@ -69,7 +69,7 @@ import nextAxiosNetwork from "next-axios-network";
 nextAxiosNetwork(axios);
 ```
 
-如果使用了自定义 axios 实例，需要手动引入拦截器，例如：
+If a custom axios instance is used, an interceptor needs to be introduced manually, for example:
 
 ```javascript
 import axios from "axios";
@@ -88,17 +88,17 @@ yourAxiosInstance.instance.interceptors.response.use(
 );
 ```
 
-完成上述配置，启动项目后访问：
+Complete the above configuration, start the project and visit it:
 
 ```bash
 http://localhost:2999
 ```
 
-即可看到监控面板
+You can see the monitoring panel
 
 ## API
 
-在上述 NextAxiosNetworkPlugin 中可配置自定义参数，例如：
+Custom parameters can be configured in the above NextAxiosNetworkPlugin, for example:
 
 ```javascript
 const NextAxiosNetworkPlugin = require("next-axios-network/plugin");
@@ -108,7 +108,7 @@ const nextConfig = {
   webpack: (config) => {
     config.plugins.push(
       NextAxiosNetworkPlugin({
-        maxCaches: 100, // 最大缓存请求日志数量，默认 50
+        maxCaches: 100, // Maximum number of request logs to cache, default 50
       })
     );
     return config;
@@ -119,11 +119,11 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-## 多项目共享面板
+## Multi-Project Sharing Panel
 
-如果有多个项目想共享面板，可以不配置打包插件，只配置拦截器并使用 npm 启动面板，例如：
+If there are multiple projects that want to share the panel, you can leave the packaging plugin unconfigured and just configure the interceptor and launch the panel using npm, for example:
 
-1. 在每个项目封装 axios 的地方或者项目首次执行的文件加入 axios 拦截器配置：
+1. Add axios interceptor configuration
 
 ```javascript
 import axios from "axios";
@@ -131,7 +131,7 @@ import nextAxiosNetwork from "next-axios-network";
 nextAxiosNetwork(axios);
 ```
 
-2. 在任意一个项目的 `package.json` 加入启动命令
+2. Add the startup command to the `package.json` of any project
 
 ```json
 "scripts": {
@@ -139,6 +139,6 @@ nextAxiosNetwork(axios);
 },
 ```
 
-3. 在终端执行 `npm run network-start` 即可，多个项目同时启动，面板启动命令只需要在任意一个项目配置启动即可
+3. Execute `npm run network-start` in the terminal, multiple projects can be started at the same time to share the panel, the panel start command can only be run once, do not start multiple times.
 
-自定义参数可以通过启动命令设置环境变量，面板服务会读取 `process.env.MAX_CACHES`
+Customization parameters can be set with the startup command to set environment variables, and the panel service reads `process.env.MAX_CACHES`
