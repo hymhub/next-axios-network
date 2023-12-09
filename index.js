@@ -60,6 +60,7 @@ var get_header = (obj, visited = /* @__PURE__ */ new WeakSet()) => {
     }
   }
 };
+var tmpId = 0;
 function serializable(data) {
   try {
     const res = JSON.stringify(data, circularReplacer());
@@ -91,7 +92,7 @@ var middlewares = {
     if (process.env.NODE_ENV !== "development") {
       return config;
     }
-    config.id = Math.random();
+    config.id = tmpId++ + Math.random();
     config.sendTime = Date.now();
     httpLogRequest(config, "request-middle-ware");
     return config;

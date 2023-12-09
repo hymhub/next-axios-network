@@ -34,6 +34,8 @@ const get_header = (obj: any, visited = new WeakSet()) => {
   }
 };
 
+let tmpId = 0;
+
 function serializable(data: any) {
   try {
     const res = JSON.stringify(data, circularReplacer());
@@ -70,7 +72,7 @@ export const middlewares = {
     if (process.env.NODE_ENV !== "development") {
       return config;
     }
-    config.id = Math.random();
+    config.id = tmpId++ + Math.random();
     config.sendTime = Date.now();
     httpLogRequest(config, "request-middle-ware");
     return config;
