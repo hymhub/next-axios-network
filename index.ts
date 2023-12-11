@@ -79,7 +79,7 @@ export const middlewares = {
   },
   requestError(error: any) {
     if (process.env.NODE_ENV !== "development") {
-      return error;
+      return Promise.reject(error);
     }
     httpLogRequest(error, "request-error");
     return Promise.reject(error);
@@ -104,7 +104,7 @@ export const middlewares = {
   },
   responseError(error: any) {
     if (process.env.NODE_ENV !== "development") {
-      return error;
+      return Promise.reject(error);
     }
     const sendTime = error.config?.sendTime || error.response?.config?.sendTime;
     httpLogRequest(
