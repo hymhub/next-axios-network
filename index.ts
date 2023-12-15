@@ -90,12 +90,12 @@ export const middlewares = {
     }
     httpLogRequest(
       {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
+        status: response?.status,
+        statusText: response?.statusText,
+        headers: response?.headers ?? {},
         config: response.config,
-        data: response.data,
-        requestHeader: get_header(response.request) || null,
+        data: response?.data,
+        requestHeader: get_header(response.request) || undefined,
         timeConsuming: Date.now() - response.config.sendTime,
       },
       "response-middle-ware"
@@ -114,8 +114,8 @@ export const middlewares = {
         stack: error.stack,
         config: error.config || error.response?.config,
         code: error.code,
-        status: error.response.status,
-        statusText: error.response.statusText,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
         requestHeader: (error?.request && get_header(error.request)) || null,
         headers: error.response?.headers,
         data: error.response?.data,

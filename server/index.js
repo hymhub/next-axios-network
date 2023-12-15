@@ -148,7 +148,7 @@ const main = (options) => {
             },
             response: {
               status: data.status,
-              statusText: data.statusText,
+              statusText: data.statusText || data.code,
               headers: data.headers,
               config: data.config,
               data: data.data,

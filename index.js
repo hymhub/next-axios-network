@@ -105,17 +105,18 @@ var middlewares = {
     return Promise.reject(error);
   },
   responseMiddleWare(response) {
+    var _a;
     if (process.env.NODE_ENV !== "development") {
       return response;
     }
     httpLogRequest(
       {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
+        status: response == null ? void 0 : response.status,
+        statusText: response == null ? void 0 : response.statusText,
+        headers: (_a = response == null ? void 0 : response.headers) != null ? _a : {},
         config: response.config,
-        data: response.data,
-        requestHeader: get_header(response.request) || null,
+        data: response == null ? void 0 : response.data,
+        requestHeader: get_header(response.request) || void 0,
         timeConsuming: Date.now() - response.config.sendTime
       },
       "response-middle-ware"
@@ -123,7 +124,7 @@ var middlewares = {
     return response;
   },
   responseError(error) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     if (process.env.NODE_ENV !== "development") {
       return Promise.reject(error);
     }
@@ -135,11 +136,11 @@ var middlewares = {
         stack: error.stack,
         config: error.config || ((_d = error.response) == null ? void 0 : _d.config),
         code: error.code,
-        status: error.response.status,
-        statusText: error.response.statusText,
+        status: (_e = error.response) == null ? void 0 : _e.status,
+        statusText: (_f = error.response) == null ? void 0 : _f.statusText,
         requestHeader: (error == null ? void 0 : error.request) && get_header(error.request) || null,
-        headers: (_e = error.response) == null ? void 0 : _e.headers,
-        data: (_f = error.response) == null ? void 0 : _f.data,
+        headers: (_g = error.response) == null ? void 0 : _g.headers,
+        data: (_h = error.response) == null ? void 0 : _h.data,
         timeConsuming: sendTime && Date.now() - sendTime
       },
       "response-error"
