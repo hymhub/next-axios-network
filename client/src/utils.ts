@@ -1,3 +1,5 @@
+import Clipboard from "clipboard";
+
 // 获取响应数据大小
 export function getResponseSize(response: any) {
   if (!response || !response.headers) {
@@ -53,3 +55,75 @@ export function formatDate(t: string | Date | number, str: string) {
   const reg = /y{2,4}|m{1,2}|d{1,2}|h{1,2}|s{1,2}|w/gi;
   return str.replace(reg, (k) => obj[k]);
 }
+
+export class CurlHelper {
+  request: any;
+  constructor(request: any) {
+    this.request = request;
+  }
+
+  getHeaders() {
+    let curlHeaders = "";
+    Object.entries(this.request?.headers ?? {}).map(([property, value]) => {
+      const header = `${property}:${value}`;
+      curlHeaders = `${curlHeaders} -H '${header}'`;
+    });
+    return curlHeaders.trim();
+  }
+
+  getMethod() {
+    return `-X ${this.request.method.toUpperCase()}`;
+  }
+
+  getBody() {
+    if (
+      typeof this.request.data !== "undefined" &&
+      this.request.data !== "" &&
+      this.request.data !== null &&
+      this.request.method.toUpperCase() !== "GET"
+    ) {
+      const data =
+        typeof this.request.data === "object" ||
+        Object.prototype.toString.call(this.request.data) === "[object Array]"
+          ? JSON.stringify(this.request.data)
+          : this.request.data;
+      return `--data '${data}'`.trim();
+    } else {
+      return "";
+    }
+  }
+
+  getUrl() {
+    return this.request.fullURL;
+  }
+
+  getBuiltURL() {
+    const url = this.getUrl();
+
+    return url.trim();
+  }
+
+  generateCommand() {
+    return `curl ${this.getMethod()} "${this.getBuiltURL()}" ${this.getHeaders()} ${this.getBody()}`
+      .trim()
+      .replace(/\s{2,}/g, " ");
+  }
+}
+
+export const copyText = (str: string, cb: () => void) => {
+  const fakeElement = document.createElement("button");
+  const clipboard = new Clipboard(fakeElement, {
+    text: () => str || "",
+    action: () => "copy",
+  });
+  clipboard.on("success", () => {
+    clipboard.destroy();
+    cb()
+  });
+  clipboard.on("error", () => {
+    clipboard.destroy();
+  });
+  document.body.appendChild(fakeElement);
+  fakeElement.click();
+  document.body.removeChild(fakeElement);
+};

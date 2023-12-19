@@ -1,6 +1,12 @@
 import ReactJson from "@microlink/react-json-view";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { formatDate, formatTime, getResponseSize } from "./utils";
+import {
+  CurlHelper,
+  copyText,
+  formatDate,
+  formatTime,
+  getResponseSize,
+} from "./utils";
 import clsx from "clsx";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
@@ -40,12 +46,14 @@ function App() {
   const [config, setConfig] = useState<any>({});
   const [list, setList] = useState<any[]>([]);
   const [tabActiveIndex, setTabActiveIndex] = useState(0);
+  const [showCopiedTip, setShowCopiedTip] = useState(false);
   const [domWidth, setDomWidth] = useState(window.innerWidth);
   const [tableWidth, setTableWidth] = useState(0);
   const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
   const [activeItem, setActiveItem] = useState<any>(null);
   const resizer = useRef<HTMLDivElement>(null);
   const table = useRef<HTMLTableElement>(null);
+  const timerRef = useRef<NodeJS.Timeout>();
   const boxHeightChange = useCallback(() => {
     setDomWidth(window.innerWidth);
     document.documentElement.style.setProperty(
@@ -117,6 +125,16 @@ function App() {
       window.removeEventListener("resize", boxHeightChange);
     };
   }, []);
+  const copyCurl = (request: any) => {
+    const curlString = new CurlHelper(request).generateCommand();
+    copyText(curlString, () => {
+      setShowCopiedTip(true);
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        setShowCopiedTip(false);
+      }, 2000);
+    });
+  };
   return (
     <div className="w-full h-full relative [border:1px_solid_#474747] flex">
       <table
@@ -290,6 +308,22 @@ function App() {
               [
                 <div className="h-full">
                   <section className="pb-2">
+                    <div className="p-2">
+                      <button
+                        onClick={() => copyCurl(activeItem.content?.request)}
+                        className="[border:1px_solid_#297DB7] bg-[#282828] hover:bg-[#3a3a3a] text-white px-3 py-2 rounded-md relative"
+                      >
+                        Copy as cURL
+                        <div
+                          className="bg-[#323232] py-1 px-2 absolute rounded text-sm bottom-[-6px] left-1/2 -translate-x-1/2 translate-y-full before:content-[''] before:absolute before:w-2 before:h-2 before:rotate-45 before:bg-[#323232] before:top-[-3px] before:left-1/2 before:-translate-x-1/2 pointer-events-none"
+                          style={{
+                            opacity: showCopiedTip ? "1" : "0",
+                          }}
+                        >
+                          copied!
+                        </div>
+                      </button>
+                    </div>
                     <p className="p-2 [border-top:1px_solid_#474747] [border-bottom:1px_solid_#474747] text-[#BDC6CF]">
                       General
                     </p>

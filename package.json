@@ -1,6 +1,6 @@
 {
   "name": "next-axios-network",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "一款在开发时监控 next.js + axios 项目服务端请求的 Network 面板",
   "main": "index.js",
   "scripts": {
